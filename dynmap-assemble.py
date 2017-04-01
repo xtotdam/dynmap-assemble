@@ -79,26 +79,47 @@ else:
     print 'It\'s supposed, tiles are square, not', side
     exit()
 
+# info output
 print '[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.format(
     hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize)
 
+# ask, if reduce?
+print 'Should we reduce final image? {}px per tile -> x (y/n)'.format(side)
+doreduce = raw_input('> ')
+if len(doreduce) > 0 and doreduce.strip()[0] in 'yY1':
+    doreduce = True
+    print 'Enter new tile size in px'
+    newside = int(raw_input('> ').strip())
+else:
+    doreduce = False
+
+if doreduce:
+    print 'Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize)
+else:
+    newside = side
+
 # assemble big image
 print 'Assembling final image...'
-res = Image.new('RGBA', (side*hsize, side*vsize))
+res = Image.new('RGBA', (newside*hsize, newside*vsize))
 
-for tile in alltiles:
+for i, tile in enumerate(alltiles):
     src = Image.open(tile['loc'])
+    if doreduce:
+        src = src.resize((newside, newside), Image.BICUBIC)
     h, v = tile['h'], tile['v']
     res.paste(src,
         (
-            (h - hstart) * side,
-            -(v - vstart - vsize + 1) * side
+            (h - hstart) * newside,
+            -(v - vstart - vsize + 1) * newside
         ))
+    print '\rProcessing tile # {} of {}...'.format(i+1, len(alltiles)),
+
+print # needed after '\r'
 
 # applying background
 if bgcolor is not None:
     print 'Applying background...'
-    background = Image.new('RGBA', (side*hsize, side*vsize), bgcolor)
+    background = Image.new('RGBA', (newside*hsize, newside*vsize), bgcolor)
     res = Image.alpha_composite(background, res)
 
 # saving

@@ -124,6 +124,6 @@ if bgcolor is not None:
 
 # saving
 print 'Saving...'
-fn = cwd + os.sep + mapp + '.png'
+fn = cwd + os.sep + world + '_' + mapp + '.png'
 res.save(fn, 'PNG')
 print 'Final image saved under \'{}\''.format(fn)

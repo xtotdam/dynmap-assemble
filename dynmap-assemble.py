@@ -17,47 +17,47 @@ cwd = os.getcwd()
 worlds = [w for w in os.listdir(cwd) if os.path.isdir(w) and w not in world_excludes]
 worlds.sort()
 
-print 'Choose world (enter number)'
+print('Choose world (enter number)')
 for i, w in enumerate(worlds):
-    print '  {:2d}:  {}'.format(i+1, w)
+    print('  {:2d}:  {}'.format(i+1, w))
 
-choice = raw_input('> ')
+choice = input('> ')
 choice = int(choice) - 1
 world = worlds[choice]
 
 maps = [m for m in os.listdir(cwd + os.sep + world) if os.path.isdir(world + os.sep + m)]
 maps.sort()
 
-print 'Choose map (enter number)'
+print('Choose map (enter number)')
 for i, m in enumerate(maps):
-    print '  {:2d}:  {}'.format(i+1, m)
+    print('  {:2d}:  {}'.format(i+1, m))
 
-choice = raw_input('> ')
+choice = input('> ')
 choice = int(choice) - 1
 mapp = maps[choice]
 
 place = cwd + os.sep + world + os.sep + mapp
 
-bgs = bgcolors.keys()
-print 'Choose background color (enter number)'
+bgs = list(bgcolors.keys())
+print('Choose background color (enter number)')
 for i, bg in enumerate(bgs):
-    print '  {:2d}:  {}'.format(i, bg)
+    print('  {:2d}:  {}'.format(i, bg))
 
-choice = raw_input('> ')
+choice = input('> ')
 choice = int(choice)
 bgcolor = bgcolors[bgs[choice]]
 
-print 'Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bgs[choice])
+print('Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bgs[choice]))
 
 # collecting locations
-print 'Collecting tile locations...'
+print('Collecting tile locations...')
 alltiles = list()
 tilefolders = [tf for tf in os.listdir(place) if os.path.isdir(place + os.sep + tf)]
 for tf in tilefolders:
     tiles = [t for t in os.listdir(place + os.sep + tf) if not t.startswith('z')]
     for t in tiles:
         hv = t.split('.')[0]
-        h, v = map(int, hv.split('_'))
+        h, v = list(map(int, hv.split('_')))
         alltiles.append({
             'loc': place + os.sep + tf + os.sep + t,
             'h': h,
@@ -76,30 +76,30 @@ side = Image.open(alltiles[0]['loc']).size
 if side[0] == side[1]:
     side = side[0]
 else:
-    print 'It\'s supposed, tiles are square, not', side
+    print('It\'s supposed, tiles are square, not', side)
     exit()
 
 # info output
-print '[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.format(
-    hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize)
+print('[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.format(
+    hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize))
 
 # ask, if reduce?
-print 'Should we reduce final image? {}px per tile -> x (y/n)'.format(side)
-doreduce = raw_input('> ')
+print('Should we reduce final image? {}px per tile -> x (y/n)'.format(side))
+doreduce = input('> ')
 if len(doreduce) > 0 and doreduce.strip()[0] in 'yY1':
     doreduce = True
-    print 'Enter new tile size in px'
-    newside = int(raw_input('> ').strip())
+    print('Enter new tile size in px')
+    newside = int(input('> ').strip())
 else:
     doreduce = False
 
 if doreduce:
-    print 'Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize)
+    print('Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize))
 else:
     newside = side
 
 # assemble big image
-print 'Assembling final image...'
+print('Assembling final image...')
 res = Image.new('RGBA', (newside*hsize, newside*vsize))
 
 for i, tile in enumerate(alltiles):
@@ -112,18 +112,18 @@ for i, tile in enumerate(alltiles):
             (h - hstart) * newside,
             -(v - vstart - vsize + 1) * newside
         ))
-    print '\rProcessing tile # {} of {}...'.format(i+1, len(alltiles)),
+    print('\rProcessing tile # {} of {}...'.format(i+1, len(alltiles)), end=' ')
 
-print # needed after '\r'
+print() # needed after '\r'
 
 # applying background
 if bgcolor is not None:
-    print 'Applying background...'
+    print('Applying background...')
     background = Image.new('RGBA', (newside*hsize, newside*vsize), bgcolor)
     res = Image.alpha_composite(background, res)
 
 # saving
-print 'Saving...'
+print('Saving...')
 fn = cwd + os.sep + world + '_' + mapp + '.png'
 res.save(fn, 'PNG')
-print 'Final image saved under \'{}\''.format(fn)
+print('Final image saved under \'{}\''.format(fn))

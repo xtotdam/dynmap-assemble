@@ -42,5 +42,7 @@ optional arguments:
 
 ### Example ###
 
+![world_t](https://user-images.githubusercontent.com/5108025/80891706-71e1da80-8cce-11ea-84f8-38c1ff8310d6.png)
+
 shrinked 10x (original one is way too big)
 ![minified example image here](https://cloud.githubusercontent.com/assets/5108025/23752237/884058de-04e5-11e7-92f6-ba12cdc4dbd3.png)

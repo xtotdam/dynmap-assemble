@@ -9,6 +9,7 @@ except NameError:
 from PIL import Image
 from collections import OrderedDict
 import os
+import argparse
 
 try:
     from tqdm import tqdm
@@ -18,41 +19,65 @@ except ImportError:
     print('You should consider installing tqdm for nice progress bar;)')
 
 bgcolors = OrderedDict()
-bgcolors['transparent'] =                   None
-bgcolors['overworld (lightblue)'] =         (0x64, 0x95, 0xED)
-bgcolors['nether (somewhat dark red)'] =    (0x30, 0x08, 0x06)
-bgcolors['the_end (somewhat violet)'] =     (0x11, 0x0D, 0x18)
-bgcolors['black'] =                         (0x00, 0x00, 0x00)
-bgcolors['white'] =                         (0xFF, 0xFF, 0xFF)
+bgcolors['transparent'] =                   {'rgb': None,               'description': ''}
+bgcolors['overworld'] =                     {'rgb': (0x64, 0x95, 0xED), 'description': 'light blue'}
+bgcolors['nether'] =                        {'rgb': (0x30, 0x08, 0x06), 'description': 'dark red'}
+bgcolors['the_end'] =                       {'rgb': (0x11, 0x0D, 0x18), 'description': 'dark violet'}
+bgcolors['black'] =                         {'rgb': (0x00, 0x00, 0x00), 'description': ''}
+bgcolors['white'] =                         {'rgb': (0xFF, 0xFF, 0xFF), 'description': ''}
 
 world_excludes = ['.git', '_markers_', 'faces']
 cwd = os.getcwd()
 
+
+parser = argparse.ArgumentParser(description='DynMap map assembler', epilog='More info at https://github.com/xtotdam/dynmap-assemble/')
+
+parser.add_argument('-i', '--interactive', action='store_true', help='Use interactive mode. Helps determine arguments')
+
+parser.add_argument('-w', '--world',    type=str, help='Server world to create map for. This is directory in <server>/dynmap/web/tiles. Default is \'world\'')
+parser.add_argument('-m', '--map',      type=str, help='Map defined in dynmap config. This is directory in <server>/dynmap/web/tiles/<world>. Default is \'t\'')
+parser.add_argument('-b', '--bgcolor',  type=str, help='Background color. Choose one of the following: ' + str(list(bgcolors.keys())))
+parser.add_argument('-r', '--resize',   type=int, help='Size in px to which each tile will be resized')
+
+args = parser.parse_args()
+
 # user choices
-def user_choice(iterable, name, do_sort=True):
-    if do_sort:
-        iterable.sort()
 
-    print('Choose {} (enter number)'.format(name))
-    for i, w in enumerate(iterable):
-        print('  {:2d}:  {}'.format(i+1, w))
+if not args.interactive:
+    # TODO check input
+    world = args.world
+    mapp = args.map
+    bg_key = args.bgcolor
+    bgcolor = bgcolors[args.bgcolor]['rgb']
 
-    choice = input('> ')
-    choice = int(choice) - 1
-    return iterable[choice]
+    newside = args.resize
+
+else:
+    def user_choice(iterable, name, do_sort=True):
+        if do_sort:
+            iterable.sort()
+
+        print('Choose {} (enter number)'.format(name))
+        for i, w in enumerate(iterable):
+            print('  {:2d}:  {}'.format(i+1, w))
+
+        choice = input('> ')
+        choice = int(choice) - 1
+        return iterable[choice]
 
 
-worlds = [w for w in os.listdir(cwd) if os.path.isdir(w) and w not in world_excludes]
-world = user_choice(worlds, 'world')
+    worlds = [w for w in os.listdir(cwd) if os.path.isdir(w) and w not in world_excludes]
+    world = user_choice(worlds, 'world')
 
-maps = [m for m in os.listdir(cwd + os.sep + world) if os.path.isdir(world + os.sep + m)]
-mapp = user_choice(maps, 'map')
+    maps = [m for m in os.listdir(cwd + os.sep + world) if os.path.isdir(world + os.sep + m)]
+    mapp = user_choice(maps, 'map')
+
+    bgs = ['{} ({})'.format(key, bgcolors[key]['description']) for key in bgcolors.keys()]
+    bg_key = user_choice(bgs, 'background color', do_sort=False)
+    bgcolor = bgcolors[bg_key.split()[0]]['rgb']
+
 
 place = cwd + os.sep + world + os.sep + mapp
-
-bgs = tuple(bgcolors.keys())
-bg_key = user_choice(bgs, 'background color', do_sort=False)
-bgcolor = bgcolors[bg_key]
 
 print('Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bg_key))
 
@@ -91,29 +116,32 @@ print('[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.
     hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize))
 
 # ask, if reduce?
-print('Should we reduce final image? {}px per tile -> x (y/n)'.format(side))
-doreduce = input('> ')
-if len(doreduce) > 0 and doreduce.strip()[0] in 'yY1':
-    doreduce = True
-    print('Enter new tile size in px')
-    newside = int(input('> ').strip())
+if args.interactive:
+    print('Should we reduce final image? {}px per tile -> x (y/n)'.format(side))
+    doreduce = input('> ')
+    doreduce = (len(doreduce) > 0 and doreduce.strip()[0] in 'yY1')
+
+    if doreduce:
+        print('Enter new tile size in px')
+        newside = int(input('> ').strip())
+    else:
+        newside = side
+
 else:
-    doreduce = False
+    doreduce = (newside != side)
 
 if doreduce:
     print('Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize))
-else:
-    newside = side
+
 
 # assemble big image
 print('Assembling final image...')
 res = Image.new('RGBA', (newside*hsize, newside*vsize))
 
-
 if tqdm_imported:
     alltiles = tqdm(alltiles)
 else:
-    print('Processing tiles')
+    print('Processing tiles...')
 
 for tile in alltiles:
     src = Image.open(tile['loc'])

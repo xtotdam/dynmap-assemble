@@ -1,6 +1,21 @@
+from __future__ import print_function
+
+# magic that makes input work as raw_input in both py2 and py3
+try:
+    input = raw_input
+except NameError:
+    pass
+
 from PIL import Image
 from collections import OrderedDict
 import os
+
+try:
+    from tqdm import tqdm
+    tqdm_imported = True
+except ImportError:
+    tqdm_imported = False
+    print('You should consider installing tqdm for nice progress bar;)')
 
 bgcolors = OrderedDict()
 bgcolors['transparent'] =                   None
@@ -14,43 +29,35 @@ world_excludes = ['.git', '_markers_', 'faces']
 cwd = os.getcwd()
 
 # user choices
+def user_choice(iterable, name, do_sort=True):
+    if do_sort:
+        iterable.sort()
+
+    print('Choose {} (enter number)'.format(name))
+    for i, w in enumerate(iterable):
+        print('  {:2d}:  {}'.format(i+1, w))
+
+    choice = input('> ')
+    choice = int(choice) - 1
+    return iterable[choice]
+
+
 worlds = [w for w in os.listdir(cwd) if os.path.isdir(w) and w not in world_excludes]
-worlds.sort()
-
-print 'Choose world (enter number)'
-for i, w in enumerate(worlds):
-    print '  {:2d}:  {}'.format(i+1, w)
-
-choice = raw_input('> ')
-choice = int(choice) - 1
-world = worlds[choice]
+world = user_choice(worlds, 'world')
 
 maps = [m for m in os.listdir(cwd + os.sep + world) if os.path.isdir(world + os.sep + m)]
-maps.sort()
-
-print 'Choose map (enter number)'
-for i, m in enumerate(maps):
-    print '  {:2d}:  {}'.format(i+1, m)
-
-choice = raw_input('> ')
-choice = int(choice) - 1
-mapp = maps[choice]
+mapp = user_choice(maps, 'map')
 
 place = cwd + os.sep + world + os.sep + mapp
 
-bgs = bgcolors.keys()
-print 'Choose background color (enter number)'
-for i, bg in enumerate(bgs):
-    print '  {:2d}:  {}'.format(i, bg)
+bgs = tuple(bgcolors.keys())
+bg_key = user_choice(bgs, 'background color', do_sort=False)
+bgcolor = bgcolors[bg_key]
 
-choice = raw_input('> ')
-choice = int(choice)
-bgcolor = bgcolors[bgs[choice]]
-
-print 'Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bgs[choice])
+print('Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bg_key))
 
 # collecting locations
-print 'Collecting tile locations...'
+print('Collecting tile locations...')
 alltiles = list()
 tilefolders = [tf for tf in os.listdir(place) if os.path.isdir(place + os.sep + tf)]
 for tf in tilefolders:
@@ -76,33 +83,39 @@ side = Image.open(alltiles[0]['loc']).size
 if side[0] == side[1]:
     side = side[0]
 else:
-    print 'It\'s supposed, tiles are square, not', side
+    print('It\'s supposed, tiles are square, not', side)
     exit()
 
 # info output
-print '[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.format(
-    hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize)
+print('[ {} : {} ]x[ {} : {} ]-> HxV: {}x{}; side size {}; final size {}x{} px'.format(
+    hstart, hend, vstart, vend, hsize, vsize, side, side*hsize, side*vsize))
 
 # ask, if reduce?
-print 'Should we reduce final image? {}px per tile -> x (y/n)'.format(side)
-doreduce = raw_input('> ')
+print('Should we reduce final image? {}px per tile -> x (y/n)'.format(side))
+doreduce = input('> ')
 if len(doreduce) > 0 and doreduce.strip()[0] in 'yY1':
     doreduce = True
-    print 'Enter new tile size in px'
-    newside = int(raw_input('> ').strip())
+    print('Enter new tile size in px')
+    newside = int(input('> ').strip())
 else:
     doreduce = False
 
 if doreduce:
-    print 'Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize)
+    print('Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize))
 else:
     newside = side
 
 # assemble big image
-print 'Assembling final image...'
+print('Assembling final image...')
 res = Image.new('RGBA', (newside*hsize, newside*vsize))
 
-for i, tile in enumerate(alltiles):
+
+if tqdm_imported:
+    alltiles = tqdm(alltiles)
+else:
+    print('Processing tiles')
+
+for tile in alltiles:
     src = Image.open(tile['loc'])
     if doreduce:
         src = src.resize((newside, newside), Image.BICUBIC)
@@ -112,18 +125,15 @@ for i, tile in enumerate(alltiles):
             (h - hstart) * newside,
             -(v - vstart - vsize + 1) * newside
         ))
-    print '\rProcessing tile # {} of {}...'.format(i+1, len(alltiles)),
-
-print # needed after '\r'
 
 # applying background
 if bgcolor is not None:
-    print 'Applying background...'
+    print('Applying background...')
     background = Image.new('RGBA', (newside*hsize, newside*vsize), bgcolor)
     res = Image.alpha_composite(background, res)
 
 # saving
-print 'Saving...'
+print('Saving...')
 fn = cwd + os.sep + world + '_' + mapp + '.png'
 res.save(fn, 'PNG')
-print 'Final image saved under \'{}\''.format(fn)
+print('Final image saved under \'{}\''.format(fn))

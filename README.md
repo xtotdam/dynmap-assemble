@@ -1,11 +1,12 @@
 dynmap-assemble
 ===============
 
-Assembles one great map from many tiles, produces by DynMap, MC Bukkit map plugin
+Assembles one great map from many tiles, produces by DynMap, MC Bukkit map plugin/MC Forge mod
 
 ### Dependencies ###
 
 * pillow (PIL)
+* tqdm (optional)
 
 ### Usage ###
 

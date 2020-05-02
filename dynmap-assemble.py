@@ -36,7 +36,7 @@ parser.add_argument('-i', '--interactive', action='store_true', help='Use intera
 
 parser.add_argument('-w', '--world',    type=str, help='Server world to create map for. This is directory in <server>/dynmap/web/tiles. Default is \'world\'')
 parser.add_argument('-m', '--map',      type=str, help='Map defined in dynmap config. This is directory in <server>/dynmap/web/tiles/<world>. Default is \'t\'')
-parser.add_argument('-b', '--bgcolor',  type=str, help='Background color. Choose one of the following: ' + str(list(bgcolors.keys())))
+parser.add_argument('-b', '--bgcolor',  type=str, help='Background color. Choose one of the following ' + str(list(bgcolors.keys())) + 'or use hex form (#6495ed)')
 parser.add_argument('-r', '--resize',   type=int, help='Size in px to which each tile will be resized')
 
 args = parser.parse_args()
@@ -47,8 +47,15 @@ if not args.interactive:
     # TODO check input
     world = args.world
     mapp = args.map
+
     bg_key = args.bgcolor
-    bgcolor = bgcolors[args.bgcolor]['rgb']
+    if bg_key in bgcolors.keys():
+        bgcolor = bgcolors[args.bgcolor]['rgb']
+    elif bg_key.startswith('#') and len(bg_key) == 7:
+        bgcolor = tuple(int(x, 16) for x in (bg_key[1:3], bg_key[3:5], bg_key[5:7]))
+    else:
+        print('Unknown background color')
+        exit()
 
     newside = args.resize
 

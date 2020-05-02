@@ -28,8 +28,8 @@ optional arguments:
   -m MAP, --map MAP     Map defined in dynmap config. This is directory in <server>/dynmap/web/tiles/<world>. Default
                         is 't'
   -b BGCOLOR, --bgcolor BGCOLOR
-                        Background color. Choose one of the following: ['transparent', 'overworld', 'nether',
-                        'the_end', 'black', 'white']
+                        Background color. Choose one of the following ['transparent', 'overworld', 'nether',
+                        'the_end', 'black', 'white'] or use hex form (#6495ed)
   -r RESIZE, --resize RESIZE
                         Size in px to which each tile will be resized
 ```

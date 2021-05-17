@@ -36,9 +36,11 @@ optional arguments:
 
 #### BG Colors cheatsheet ####
 
-- ![overworld](https://placehold.it/15/6495ed/000000?text=+)    `overworld`
-- ![nether](https://placehold.it/15/300806/000000?text=+)       `nether`
-- ![the_end](https://placehold.it/15/110d18/000000?text=+)      `the_end` (this one isn't black, just very dark violet)
+- `overworld`
+- `nether`
+- `the_end` (this one isn't black, just very dark violet)
+
+![palette](https://user-images.githubusercontent.com/5108025/118475069-78de5e00-b714-11eb-9870-21e939c971e3.png)
 
 ### Example ###
 

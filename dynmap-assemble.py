@@ -95,6 +95,9 @@ tilefolders = [tf for tf in os.listdir(place) if os.path.isdir(place + os.sep + 
 for tf in tilefolders:
     tiles = [t for t in os.listdir(place + os.sep + tf) if not t.startswith('z')]
     for t in tiles:
+        if t == '.DS_Store':
+            continue
+
         hv = t.split('.')[0]
         h, v = map(int, hv.split('_'))
         alltiles.append({

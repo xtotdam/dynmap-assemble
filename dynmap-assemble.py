@@ -11,6 +11,8 @@ from collections import OrderedDict
 import os
 import argparse
 
+SIZE_SAME_AS_ORIGIN = -1
+
 try:
     from tqdm import tqdm
     tqdm_imported = True
@@ -56,8 +58,14 @@ if not args.interactive:
     else:
         print('Unknown background color')
         exit()
-
-    newside = args.resize
+    
+    if args.resize is not None:
+        if args.resize < -2 or args.resize = 0: # validate input
+            print('Invalid value for option --resize. Valid values: -1 for original size or positive integer for required size.')
+            exit()
+        newside = args.resize
+    else:
+        newside = SIZE_SAME_AS_ORIGIN
 
 else:
     def user_choice(iterable, name, do_sort=True):
@@ -138,7 +146,7 @@ if args.interactive:
         newside = side
 
 else:
-    doreduce = (newside != side)
+    doreduce = (newside != side and newside != SIZE_SAME_AS_ORIGIN)
 
 if doreduce:
     print('Reducing: {}->{} => final size {}x{} px'.format(side, newside, newside*hsize, newside*vsize))
@@ -146,7 +154,8 @@ if doreduce:
 
 # assemble big image
 print('Assembling final image...')
-res = Image.new('RGBA', (newside*hsize, newside*vsize))
+canvas_side = side if newside == SIZE_SAME_AS_ORIGIN else newside
+res = Image.new('RGBA', (canvas_side*hsize, canvas_side*vsize))
 
 if tqdm_imported:
     alltiles = tqdm(alltiles)
@@ -160,14 +169,14 @@ for tile in alltiles:
     h, v = tile['h'], tile['v']
     res.paste(src,
         (
-            (h - hstart) * newside,
-            -(v - vstart - vsize + 1) * newside
+            (h - hstart) * canvas_side,
+            -(v - vstart - vsize + 1) * canvas_side
         ))
 
 # applying background
 if bgcolor is not None:
     print('Applying background...')
-    background = Image.new('RGBA', (newside*hsize, newside*vsize), bgcolor)
+    background = Image.new('RGBA', (canvas_side*hsize, canvas_side*vsize), bgcolor)
     res = Image.alpha_composite(background, res)
 
 # saving

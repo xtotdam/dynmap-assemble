@@ -60,7 +60,7 @@ if not args.interactive:
         exit()
     
     if args.resize is not None:
-        if args.resize < -2 or args.resize = 0: # validate input
+        if args.resize < -2 or args.resize == 0: # validate input
             print('Invalid value for option --resize. Valid values: -1 for original size or positive integer for required size.')
             exit()
         newside = args.resize
@@ -103,7 +103,7 @@ tilefolders = [tf for tf in os.listdir(place) if os.path.isdir(place + os.sep + 
 for tf in tilefolders:
     tiles = [t for t in os.listdir(place + os.sep + tf) if not t.startswith('z')]
     for t in tiles:
-        if t == '.DS_Store':
+        if t == '.DS_Store' or t.endswith(".new"):
             continue
 
         hv = t.split('.')[0]

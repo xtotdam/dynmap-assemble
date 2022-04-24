@@ -40,6 +40,7 @@ parser.add_argument('-w', '--world',    type=str, help='Server world to create m
 parser.add_argument('-m', '--map',      type=str, help='Map defined in dynmap config. This is directory in <server>/dynmap/web/tiles/<world>. Default is \'t\'')
 parser.add_argument('-b', '--bgcolor',  type=str, help='Background color. Choose one of the following ' + str(list(bgcolors.keys())) + 'or use hex form (#6495ed)')
 parser.add_argument('-r', '--resize',   type=int, help='Size in px to which each tile will be resized')
+parser.add_argument('-o', '--output',   type=str, help='Output file. Default is WORLD-NAME_MAP-TYPE.png')
 
 args = parser.parse_args()
 
@@ -49,6 +50,7 @@ if not args.interactive:
     # TODO check input
     world = args.world
     mapp = args.map
+    output = args.output
 
     bg_key = args.bgcolor
     if bg_key in bgcolors.keys():
@@ -60,7 +62,7 @@ if not args.interactive:
         exit()
     
     if args.resize is not None:
-        if args.resize < -2 or args.resize = 0: # validate input
+        if args.resize < -2 or args.resize == 0: # validate input
             print('Invalid value for option --resize. Valid values: -1 for original size or positive integer for required size.')
             exit()
         newside = args.resize
@@ -91,6 +93,13 @@ else:
     bg_key = user_choice(bgs, 'background color', do_sort=False)
     bgcolor = bgcolors[bg_key.split()[0]]['rgb']
 
+    print('Set output file. Default ' + world + "_" + mapp + ".png")
+    output = input('> ')
+
+output = output.strip()
+if (output == ""):
+    output = world + "_" + mapp + ".png"
+
 
 place = cwd + os.sep + world + os.sep + mapp
 
@@ -103,7 +112,7 @@ tilefolders = [tf for tf in os.listdir(place) if os.path.isdir(place + os.sep + 
 for tf in tilefolders:
     tiles = [t for t in os.listdir(place + os.sep + tf) if not t.startswith('z')]
     for t in tiles:
-        if t == '.DS_Store':
+        if t == '.DS_Store' or t.endswith(".new"):
             continue
 
         hv = t.split('.')[0]
@@ -181,6 +190,6 @@ if bgcolor is not None:
 
 # saving
 print('Saving...')
-fn = cwd + os.sep + world + '_' + mapp + '.png'
+fn = cwd + os.sep + output
 res.save(fn, 'PNG')
 print('Final image saved under \'{}\''.format(fn))

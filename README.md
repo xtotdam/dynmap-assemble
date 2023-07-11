@@ -48,9 +48,9 @@ world over longer periods of time where manually rendering everyday would be a p
 #### BG Colors cheatsheet ####
 
 - `transparent`
-- `overworld`
-- `nether`
-- `the_end` (this one isn't black, just very dark violet)
+- `overworld` (left)
+- `nether` (center)
+- `the_end` (right: this one isn't black, just very dark violet)
 - `black`
 - `white`
   or any other hex (#6495ed)

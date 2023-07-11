@@ -32,13 +32,28 @@ optional arguments:
                         'the_end', 'black', 'white'] or use hex form (#6495ed)
   -r RESIZE, --resize RESIZE
                         Size in px to which each tile will be resized
+  -o OUTPUT, --output OUTPUT
+                        Output file. Default is WORLD-NAME_MAP-TYPE.png
 ```
+
+#### run-dynmap-assemble ####
+
+When run on windows, will run dynmap-assemble with the parameters specified on the second last line (can be changed).
+Creates a directory with the Year, Month, and Date of render, with the filename being the full time of render.
+
+Use this with [https://towardsdatascience.com/automate-your-python-scripts-with-task-scheduler-661d0a40b279](url)
+to automate renders of your favorite minecraft world at set times! This can be used to create a montage of your
+world over longer periods of time where manually rendering everyday would be a pain.
 
 #### BG Colors cheatsheet ####
 
-- `overworld`
-- `nether`
-- `the_end` (this one isn't black, just very dark violet)
+- `transparent`
+- `overworld` (left)
+- `nether` (center)
+- `the_end` (right: this one isn't black, just very dark violet)
+- `black`
+- `white`
+  or any other hex (#6495ed)
 
 ![palette](https://user-images.githubusercontent.com/5108025/118475069-78de5e00-b714-11eb-9870-21e939c971e3.png)
 

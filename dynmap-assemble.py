@@ -40,7 +40,7 @@ parser.add_argument('-w', '--world',    type=str, help='Server world to create m
 parser.add_argument('-m', '--map',      type=str, help='Map defined in dynmap config. This is directory in <server>/dynmap/web/tiles/<world>. Default is \'t\'')
 parser.add_argument('-b', '--bgcolor',  type=str, help='Background color. Choose one of the following ' + str(list(bgcolors.keys())) + 'or use hex form (#6495ed)')
 parser.add_argument('-r', '--resize',   type=int, help='Size in px to which each tile will be resized')
-parser.add_argument('-o', '--output',   type=str, help='Output file. Default is WORLD-NAME_MAP-TYPE.png')
+parser.add_argument('-o', '--output',   type=str, default="", help='Output file. Default is WORLD-NAME_MAP-TYPE.png')
 
 args = parser.parse_args()
 
@@ -96,12 +96,13 @@ else:
     print('Set output file. Default ' + world + "_" + mapp + ".png")
     output = input('> ')
 
-output = output.strip()
+
 if (output == ""):
     output = world + "_" + mapp + ".png"
+else:
+    output = output.strip()
 
-
-place = cwd + os.sep + world + os.sep + mapp
+place = os.path.join(cwd, world, mapp)
 
 print('Assembling map \'{}\' of world \'{}\' located at \'{}\' using \'{}\' as background color'.format(mapp, world, place, bg_key))
 
